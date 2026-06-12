@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chimney Cricket Calculator</title>
+
+  <style>
+    :root {
+      --bg: #f5f5f2;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --border: #d0d5dd;
+      --accent: #8b1e1e;
+      --accent-dark: #651515;
+      --output: #f9fafb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 780px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 700;
+    }
+
+    .help {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: -2px;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      padding: 13px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    .outputs {
+      display: grid;
+      gap: 10px;
+    }
+
+    .output {
+      background: var(--output);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .output span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .output strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 22px;
+    }
+
+    .rise-box {
+      margin-top: 16px;
+      padding: 14px;
+      background: #fff7ed;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .diagram {
+      margin-top: 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .triangle-side {
+      stroke: #1f2933;
+      stroke-width: 4;
+      fill: none;
+    }
+
+    .triangle-label {
+      font-size: 18px;
+      font-weight: bold;
+      fill: #8b1e1e;
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Chimney Cricket Calculator</h1>
+      <p>Enter roof pitch, cricket pitch, and chimney width to calculate Wall, Spine, Roof, and Rise.</p>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Inputs</h2>
+
+        <div class="row">
+          <div>
+            <label for="roofPitch">Roof Pitch</label>
+            <div class="help">Example: 7 for 7/12</div>
+            <input id="roofPitch" type="number" step="0.01" value="7">
+          </div>
+
+          <div>
+            <label for="cricketPitch">Cricket Pitch</label>
+            <div class="help">Example: 3 for 3/12</div>
+            <input id="cricketPitch" type="number" step="0.01" value="3">
+          </div>
+        </div>
+
+        <label for="chimneyWidth">Chimney Width</label>
+        <div class="help">Example: 30</div>
+        <input id="chimneyWidth" type="number" step="0.01" value="30">
+
+        <button onclick="calculate()">Calculate</button>
+      </section>
+
+      <section class="card">
+        <h2>Outputs</h2>
+
+        <div class="outputs">
+          <div class="output">
+            <span>Wall</span>
+            <strong id="wallOutput">—</strong>
+          </div>
+
+          <div class="output">
+            <span>Spine</span>
+            <strong id="spineOutput">—</strong>
+          </div>
+
+          <div class="output">
+            <span>Roof</span>
+            <strong id="roofOutput">—</strong>
+          </div>
+        </div>
+
+        <div class="rise-box" id="riseOutput">
+          Rise: —
+        </div>
+      </section>
+    </div>
+
+    <section class="diagram">
+      <h2>Triangle Output</h2>
+
+      <svg viewBox="0 0 620 360" role="img" aria-label="Triangle diagram showing Wall, Spine, and Roof">
+        <!-- Triangle points -->
+        <!-- A = top left, B = bottom left, C = bottom right -->
+        <line x1="150" y1="80" x2="150" y2="280" class="triangle-side"></line>
+        <line x1="150" y1="280" x2="470" y2="280" class="triangle-side"></line>
+        <line x1="150" y1="80" x2="470" y2="280" class="triangle-side"></line>
+
+        <!-- Labels -->
+        <text x="75" y="185" class="triangle-label" id="wallLabel">Wall = —</text>
+        <text x="275" y="320" class="triangle-label" id="spineLabel">Spine = —</text>
+        <text x="330" y="165" class="triangle-label" id="roofLabel">Roof = —</text>
+      </svg>
+
+      <div class="small">
+        Diagram is for labeling the triangle sides. The calculated Roof side is the hypotenuse.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function round2(value) {
+      return Math.round(value * 100) / 100;
+    }
+
+    function calculate() {
+      const rp = parseFloat(document.getElementById("roofPitch").value);
+      const cp = parseFloat(document.getElementById("cricketPitch").value);
+      const cw = parseFloat(document.getElementById("chimneyWidth").value);
+
+      if (isNaN(rp) || isNaN(cp) || isNaN(cw)) {
+        alert("Please enter roof pitch, cricket pitch, and chimney width.");
+        return;
+      }
+
+      if (rp <= 0) {
+        alert("Roof pitch must be greater than zero.");
+        return;
+      }
+
+      if (cp <= 0 || cw <= 0) {
+        alert("Cricket pitch and chimney width must be greater than zero.");
+        return;
+      }
+
+      // Step 1
+      const hcw = cw / 2;
+
+      // Step 2
+      const cpx = cp / 12;
+
+      // Step 3
+      const rise = hcw * cpx;
+
+      // Step 4
+      const aa = Math.pow(hcw, 2) + Math.pow(rise, 2);
+
+      // Step 5
+      const a = Math.sqrt(aa);
+
+      // Step 6
+      const rpx = rp / 12;
+
+      // Step 7
+      const b = rise / rpx;
+
+      // Step 8
+      const cc = Math.pow(a, 2) + Math.pow(b, 2);
+
+      // Step 9
+      const c = Math.sqrt(cc);
+
+      // Rename outputs
+      const wall = round2(a);
+      const spine = round2(b);
+      const roof = round2(c);
+      const riseRounded = round2(rise);
+
+      // Output values
+      document.getElementById("wallOutput").textContent = wall;
+      document.getElementById("spineOutput").textContent = spine;
+      document.getElementById("roofOutput").textContent = roof;
+      document.getElementById("riseOutput").textContent = "Rise: " + riseRounded;
+
+      // Triangle labels
+      document.getElementById("wallLabel").textContent = "Wall = " + wall;
+      document.getElementById("spineLabel").textContent = "Spine = " + spine;
+      document.getElementById("roofLabel").textContent = "Roof = " + roof;
+    }
+
+    calculate();
+  </script>
+</body>
+</html>

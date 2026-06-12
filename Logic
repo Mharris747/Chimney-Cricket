@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chimney Cricket Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .results {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f2f2f2;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Chimney Cricket Calculator</h1>
+
+  <label>Roof Pitch</label>
+  <input type="number" id="rp" step="0.01" placeholder="Example: 7">
+
+  <label>Cricket Pitch</label>
+  <input type="number" id="cp" step="0.01" placeholder="Example: 3">
+
+  <label>Chimney Width</label>
+  <input type="number" id="cw" step="0.01" placeholder="Example: 30">
+
+  <button onclick="calculate()">Calculate</button>
+
+  <div class="results" id="results">
+    Results will appear here.
+  </div>
+
+  <script>
+    function calculate() {
+      const rp = parseFloat(document.getElementById("rp").value);
+      const cp = parseFloat(document.getElementById("cp").value);
+      const cw = parseFloat(document.getElementById("cw").value);
+
+      if (isNaN(rp) || isNaN(cp) || isNaN(cw)) {
+        document.getElementById("results").innerHTML = "Please enter all three values.";
+        return;
+      }
+
+      if (rp === 0) {
+        document.getElementById("results").innerHTML = "Roof pitch cannot be zero.";
+        return;
+      }
+
+      const hcw = cw / 2;
+      const cpx = cp / 12;
+      const rise = hcw * cpx;
+      const aa = Math.pow(hcw, 2) + Math.pow(rise, 2);
+      const a = Math.sqrt(aa);
+      const rpx = rp / 12;
+      const b = rise / rpx;
+      const cc = Math.pow(a, 2) + Math.pow(b, 2);
+      const c = Math.sqrt(cc);
+
+      document.getElementById("results").innerHTML = `
+        <strong>Results:</strong><br>
+        a = ${a.toFixed(2)}<br>
+        b = ${b.toFixed(2)}<br>
+        c = ${c.toFixed(2)}<br>
+        rise = ${rise.toFixed(2)}
+      `;
+    }
+  </script>
+
+</body>
+</html>

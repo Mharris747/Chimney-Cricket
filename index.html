@@ -1,14 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chimney Cricket Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
+      max-width: 700px;
       margin: 40px auto;
       padding: 20px;
       line-height: 1.5;
+      background: #ffffff;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    p.description {
+      margin-top: 0;
+      color: #555;
     }
 
     label {
@@ -22,6 +35,7 @@
       padding: 10px;
       font-size: 16px;
       margin-top: 5px;
+      box-sizing: border-box;
     }
 
     button {
@@ -32,31 +46,91 @@
       cursor: pointer;
     }
 
-    .results {
+    .results, .diagram-box {
       margin-top: 25px;
-      padding: 15px;
-      background: #f2f2f2;
+      padding: 18px;
+      background: #f4f4f4;
+      border-radius: 8px;
+    }
+
+    .result-line {
+      margin: 6px 0;
+      font-size: 17px;
+    }
+
+    .rise-box {
+      margin-top: 16px;
+      padding: 12px;
+      background: #e9f3ff;
       border-radius: 6px;
+      font-weight: bold;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-top: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .triangle-side {
+      stroke: #222;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .triangle-label {
+      font-size: 16px;
+      font-weight: bold;
+      fill: #111;
+    }
+
+    .triangle-note {
+      font-size: 14px;
+      fill: #666;
     }
   </style>
 </head>
 <body>
 
   <h1>Chimney Cricket Calculator</h1>
+  <p class="description">
+    Enter roof pitch, cricket pitch, and chimney width to calculate Wall, Spine, Roof, and Rise.
+  </p>
 
-  <label>Roof Pitch</label>
-  <input type="number" id="rp" step="0.01" placeholder="Example: 7">
+  <label for="rp">Roof Pitch</label>
+  <input type="number" id="rp" step="0.01" placeholder="Example: 7" />
 
-  <label>Cricket Pitch</label>
-  <input type="number" id="cp" step="0.01" placeholder="Example: 3">
+  <label for="cp">Cricket Pitch</label>
+  <input type="number" id="cp" step="0.01" placeholder="Example: 3" />
 
-  <label>Chimney Width</label>
-  <input type="number" id="cw" step="0.01" placeholder="Example: 30">
+  <label for="cw">Chimney Width</label>
+  <input type="number" id="cw" step="0.01" placeholder="Example: 30" />
 
   <button onclick="calculate()">Calculate</button>
 
   <div class="results" id="results">
-    Results will appear here.
+    Enter values and click Calculate.
+  </div>
+
+  <div class="diagram-box">
+    <h2>Triangle Output</h2>
+    <svg viewBox="0 0 500 320" id="triangleSvg">
+      <!-- Triangle -->
+      <line x1="100" y1="250" x2="100" y2="80" class="triangle-side"></line>
+      <line x1="100" y1="250" x2="350" y2="250" class="triangle-side"></line>
+      <line x1="100" y1="80" x2="350" y2="250" class="triangle-side"></line>
+
+      <!-- Labels -->
+      <text x="50" y="165" class="triangle-label" id="wallLabel">Wall = --</text>
+      <text x="190" y="275" class="triangle-label" id="spineLabel">Spine = --</text>
+      <text x="215" y="150" class="triangle-label" id="roofLabel">Roof = --</text>
+
+      <text x="100" y="30" class="triangle-note">Triangle sides are labeled with calculated outputs</text>
+    </svg>
   </div>
 
   <script>
@@ -65,33 +139,60 @@
       const cp = parseFloat(document.getElementById("cp").value);
       const cw = parseFloat(document.getElementById("cw").value);
 
+      const resultsDiv = document.getElementById("results");
+
       if (isNaN(rp) || isNaN(cp) || isNaN(cw)) {
-        document.getElementById("results").innerHTML = "Please enter all three values.";
+        resultsDiv.innerHTML = "Please enter all three values.";
         return;
       }
 
       if (rp === 0) {
-        document.getElementById("results").innerHTML = "Roof pitch cannot be zero.";
+        resultsDiv.innerHTML = "Roof pitch cannot be zero.";
         return;
       }
 
+      // Step 1
       const hcw = cw / 2;
+
+      // Step 2
       const cpx = cp / 12;
+
+      // Step 3
       const rise = hcw * cpx;
+
+      // Step 4
       const aa = Math.pow(hcw, 2) + Math.pow(rise, 2);
+
+      // Step 5
       const a = Math.sqrt(aa);
+
+      // Step 6
       const rpx = rp / 12;
+
+      // Step 7
       const b = rise / rpx;
+
+      // Step 8
       const cc = Math.pow(a, 2) + Math.pow(b, 2);
+
+      // Step 9
       const c = Math.sqrt(cc);
 
-      document.getElementById("results").innerHTML = `
-        <strong>Results:</strong><br>
-        a = ${a.toFixed(2)}<br>
-        b = ${b.toFixed(2)}<br>
-        c = ${c.toFixed(2)}<br>
-        rise = ${rise.toFixed(2)}
+      const wall = a.toFixed(2);
+      const spine = b.toFixed(2);
+      const roof = c.toFixed(2);
+      const riseOutput = rise.toFixed(2);
+
+      resultsDiv.innerHTML = `
+        <div class="result-line"><strong>Wall:</strong> ${wall}</div>
+        <div class="result-line"><strong>Spine:</strong> ${spine}</div>
+        <div class="result-line"><strong>Roof:</strong> ${roof}</div>
+        <div class="rise-box">Rise: ${riseOutput}</div>
       `;
+
+      document.getElementById("wallLabel").textContent = `Wall = ${wall}`;
+      document.getElementById("spineLabel").textContent = `Spine = ${spine}`;
+      document.getElementById("roofLabel").textContent = `Roof = ${roof}`;
     }
   </script>
 

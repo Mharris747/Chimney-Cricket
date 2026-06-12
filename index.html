@@ -1,77 +1,462 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chimney Cricket Calculator</title>
   <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7f3;
+      --card: #ffffff;
+      --text: #162019;
+      --muted: #5d6a61;
+      --line: #d7dfd4;
+      --accent: #2f6f4e;
+      --accent-dark: #24563d;
+      --error: #b42318;
+      --soft: #eaf2e8;
+      --diagram: #f8fbf6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-      line-height: 1.5;
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 14px;
+    }
+
+    main {
+      width: min(100%, 720px);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(29, 45, 33, 0.12);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 24px 22px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbf6 100%);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 6vw, 2.8rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .content {
+      padding: 22px;
+    }
+
+    .inputs {
+      display: grid;
+      gap: 16px;
     }
 
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 400;
+      margin-top: 3px;
     }
 
     input {
       width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 5px;
+      min-height: 52px;
+      border: 1px solid #b9c5b7;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 1.15rem;
+      color: var(--text);
+      background: #ffffff;
+    }
+
+    input:focus {
+      outline: 3px solid rgba(47, 111, 78, 0.2);
+      border-color: var(--accent);
     }
 
     button {
-      margin-top: 20px;
-      padding: 12px;
       width: 100%;
-      font-size: 16px;
+      min-height: 54px;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .results {
-      margin-top: 25px;
-      padding: 15px;
-      background: #f2f2f2;
+    button:hover,
+    button:focus {
+      background: var(--accent-dark);
+    }
+
+    button:focus {
+      outline: 3px solid rgba(47, 111, 78, 0.26);
+      outline-offset: 2px;
+    }
+
+    .message {
+      display: none;
+      margin-top: 18px;
+      padding: 13px 14px;
       border-radius: 6px;
+      background: #fff4f2;
+      border: 1px solid #f2b8b2;
+      color: var(--error);
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .result {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 15px;
+      min-width: 0;
+    }
+
+    .result-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .result-value {
+      display: block;
+      margin-top: 6px;
+      font-size: clamp(1.55rem, 7vw, 2.2rem);
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .diagram-wrap {
+      margin-top: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--diagram);
+      padding: 12px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 260px;
+    }
+
+    .triangle-side {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .guide {
+      stroke: #a8b5a5;
+      stroke-width: 2;
+      stroke-dasharray: 6 7;
+    }
+
+    .diagram-label {
+      fill: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .diagram-note {
+      fill: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    @media (min-width: 640px) {
+      body {
+        padding: 42px 20px;
+      }
+
+      .inputs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .results {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 420px) {
+      .content,
+      .header {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .results {
+        grid-template-columns: 1fr;
+      }
+
+      .diagram-label {
+        font-size: 16px;
+      }
+
+      .diagram-note {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
+  <main>
+    <section class="card" aria-labelledby="page-title">
+      <div class="header">
+        <h1 id="page-title">Chimney Cricket Calculator</h1>
+        <p class="subtitle">Enter roof pitch, cricket pitch, and chimney width to calculate the wall, spine, roof, and rise measurements.</p>
+      </div>
 
-  <h1>Chimney Cricket Calculator</h1>
+      <div class="content">
+        <form id="calculator" novalidate>
+          <div class="inputs">
+            <div>
+              <label for="rp">Roof Pitch <span class="hint">Example: 7 means 7/12</span></label>
+              <input id="rp" name="rp" type="number" inputmode="decimal" min="0" step="any" value="7">
+            </div>
 
-  <label>Roof Pitch</label>
-  <input type="number" id="rp" step="0.01" placeholder="Example: 7">
+            <div>
+              <label for="cp">Cricket Pitch <span class="hint">Example: 3 means 3/12</span></label>
+              <input id="cp" name="cp" type="number" inputmode="decimal" min="0" step="any" value="3">
+            </div>
 
-  <label>Cricket Pitch</label>
-  <input type="number" id="cp" step="0.01" placeholder="Example: 3">
+            <div>
+              <label for="cw">Chimney Width <span class="hint">Inches</span></label>
+              <input id="cw" name="cw" type="number" inputmode="decimal" min="0" step="any" value="30">
+            </div>
+          </div>
 
-  <label>Chimney Width</label>
-  <input type="number" id="cw" step="0.01" placeholder="Example: 30">
+          <button type="submit">Calculate</button>
+          <div id="message" class="message" role="alert"></div>
+        </form>
 
-  <button onclick="calculate()">Calculate</button>
+        <section class="results" aria-live="polite" aria-label="Calculated results">
+          <div class="result">
+            <span class="result-label">Wall</span>
+            <span class="result-value" id="wall">15 7/16</span>
+          </div>
+          <div class="result">
+            <span class="result-label">Spine</span>
+            <span class="result-value" id="spine">6 7/16</span>
+          </div>
+          <div class="result">
+            <span class="result-label">Roof</span>
+            <span class="result-value" id="roof">16 3/4</span>
+          </div>
+          <div class="result">
+            <span class="result-label">Rise</span>
+            <span class="result-value" id="rise">3 3/4</span>
+          </div>
+        </section>
 
-  <div class="results" id="results">
-    Results will appear here.
-  </div>
+        <section class="diagram-wrap" aria-label="Triangle diagram">
+          <svg viewBox="0 0 620 330" role="img" aria-labelledby="diagram-title diagram-desc">
+            <title id="diagram-title">Triangle diagram for chimney cricket sides</title>
+            <desc id="diagram-desc">Wall and Spine form the right angle. Roof is the hypotenuse. Rise is shown separately.</desc>
+            <line class="guide" id="spine-guide" x1="110" y1="248" x2="110" y2="78"></line>
+            <line class="guide" id="wall-guide" x1="110" y1="248" x2="440" y2="248"></line>
+            <path class="triangle-side" id="triangle-path" d="M110 248 L110 78 L440 248 Z"></path>
+            <path id="right-angle" d="M110 224 L134 224 L134 248" fill="none" stroke="#7e8d7a" stroke-width="3"></path>
+
+            <text class="diagram-label" id="diagram-spine-label" x="42" y="160" text-anchor="start">Spine = <tspan id="diagram-spine">6 7/16</tspan></text>
+            <text class="diagram-label" id="diagram-wall-label" x="270" y="286" text-anchor="middle">Wall = <tspan id="diagram-wall">15 7/16</tspan></text>
+            <text class="diagram-label" id="diagram-roof-label" x="315" y="150" text-anchor="middle" transform="rotate(28 315 150)">Roof = <tspan id="diagram-roof">16 3/4</tspan></text>
+
+            <line x1="490" y1="248" x2="490" y2="78" stroke="#2f6f4e" stroke-width="4" stroke-linecap="round"></line>
+            <path d="M478 78 L502 78 M478 248 L502 248" stroke="#2f6f4e" stroke-width="4" stroke-linecap="round"></path>
+            <text class="diagram-note" x="520" y="168">Rise = <tspan id="diagram-rise">3 3/4</tspan></text>
+          </svg>
+        </section>
+      </div>
+    </section>
+  </main>
 
   <script>
-    function calculate() {
-      const rp = parseFloat(document.getElementById("rp").value);
-      const cp = parseFloat(document.getElementById("cp").value);
-      const cw = parseFloat(document.getElementById("cw").value);
+    const form = document.getElementById('calculator');
+    const message = document.getElementById('message');
+    const fields = {
+      rp: document.getElementById('rp'),
+      cp: document.getElementById('cp'),
+      cw: document.getElementById('cw')
+    };
 
-      if (isNaN(rp) || isNaN(cp) || isNaN(cw)) {
-        document.getElementById("results").innerHTML = "Please enter all three values.";
+    const outputs = {
+      wall: document.getElementById('wall'),
+      spine: document.getElementById('spine'),
+      roof: document.getElementById('roof'),
+      rise: document.getElementById('rise'),
+      diagramWall: document.getElementById('diagram-wall'),
+      diagramSpine: document.getElementById('diagram-spine'),
+      diagramRoof: document.getElementById('diagram-roof'),
+      diagramRise: document.getElementById('diagram-rise')
+    };
+
+    const diagram = {
+      path: document.getElementById('triangle-path'),
+      wallGuide: document.getElementById('wall-guide'),
+      spineGuide: document.getElementById('spine-guide'),
+      rightAngle: document.getElementById('right-angle'),
+      wallLabel: document.getElementById('diagram-wall-label'),
+      spineLabel: document.getElementById('diagram-spine-label'),
+      roofLabel: document.getElementById('diagram-roof-label')
+    };
+
+    function toNumber(input) {
+      return Number(input.value);
+    }
+
+    function showMessage(text) {
+      message.textContent = text;
+      message.classList.add('show');
+    }
+
+    function clearMessage() {
+      message.textContent = '';
+      message.classList.remove('show');
+    }
+
+    function setOutput(id, value) {
+      outputs[id].textContent = value;
+    }
+
+    function greatestCommonDivisor(a, b) {
+      while (b !== 0) {
+        const next = a % b;
+        a = b;
+        b = next;
+      }
+
+      return a;
+    }
+
+    function formatInches(value) {
+      const denominator = 16;
+      const roundedSixteenths = Math.round(value * denominator);
+      const whole = Math.floor(roundedSixteenths / denominator);
+      let numerator = roundedSixteenths % denominator;
+
+      if (numerator === 0) {
+        return String(whole);
+      }
+
+      const divisor = greatestCommonDivisor(numerator, denominator);
+      numerator = numerator / divisor;
+      const reducedDenominator = denominator / divisor;
+
+      if (whole === 0) {
+        return `${numerator}/${reducedDenominator}`;
+      }
+
+      return `${whole} ${numerator}/${reducedDenominator}`;
+    }
+
+    function updateDiagram(wall, spine) {
+      const originX = 110;
+      const originY = 248;
+      const maxWallLength = 330;
+      const maxSpineLength = 170;
+      const scale = Math.min(maxWallLength / wall, maxSpineLength / spine);
+      const wallLength = wall * scale;
+      const spineLength = spine * scale;
+      const topX = originX;
+      const topY = originY - spineLength;
+      const endX = originX + wallLength;
+      const endY = originY;
+      const roofMidX = (topX + endX) / 2;
+      const roofMidY = (topY + endY) / 2;
+      const roofAngle = Math.atan2(endY - topY, endX - topX) * 180 / Math.PI;
+
+      diagram.path.setAttribute('d', `M${originX} ${originY} L${topX} ${topY} L${endX} ${endY} Z`);
+      diagram.spineGuide.setAttribute('x1', originX);
+      diagram.spineGuide.setAttribute('y1', originY);
+      diagram.spineGuide.setAttribute('x2', topX);
+      diagram.spineGuide.setAttribute('y2', topY);
+      diagram.wallGuide.setAttribute('x1', originX);
+      diagram.wallGuide.setAttribute('y1', originY);
+      diagram.wallGuide.setAttribute('x2', endX);
+      diagram.wallGuide.setAttribute('y2', endY);
+      diagram.rightAngle.setAttribute('d', `M${originX} ${originY - 24} L${originX + 24} ${originY - 24} L${originX + 24} ${originY}`);
+
+      diagram.spineLabel.setAttribute('x', originX - 68);
+      diagram.spineLabel.setAttribute('y', originY - (spineLength / 2));
+      diagram.wallLabel.setAttribute('x', originX + (wallLength / 2));
+      diagram.wallLabel.setAttribute('y', originY + 38);
+      diagram.roofLabel.setAttribute('x', roofMidX + 18);
+      diagram.roofLabel.setAttribute('y', roofMidY - 14);
+      diagram.roofLabel.setAttribute('transform', `rotate(${roofAngle} ${roofMidX + 18} ${roofMidY - 14})`);
+    }
+
+    function calculate() {
+      const rp = toNumber(fields.rp);
+      const cp = toNumber(fields.cp);
+      const cw = toNumber(fields.cw);
+
+      if (fields.rp.value === '' || fields.cp.value === '' || fields.cw.value === '') {
+        showMessage('Please enter all values before calculating.');
         return;
       }
 
-      if (rp === 0) {
-        document.getElementById("results").innerHTML = "Roof pitch cannot be zero.";
+      if (rp <= 0) {
+        showMessage('Roof Pitch must be greater than 0 because the formula divides by roof pitch.');
+        return;
+      }
+
+      if (cp <= 0 || cw <= 0) {
+        showMessage('Cricket Pitch and Chimney Width must both be greater than 0.');
         return;
       }
 
@@ -85,15 +470,37 @@
       const cc = Math.pow(a, 2) + Math.pow(b, 2);
       const c = Math.sqrt(cc);
 
-      document.getElementById("results").innerHTML = `
-        <strong>Results:</strong><br>
-        a = ${a.toFixed(2)}<br>
-        b = ${b.toFixed(2)}<br>
-        c = ${c.toFixed(2)}<br>
-        rise = ${rise.toFixed(2)}
-      `;
-    }
-  </script>
+      const wallValue = formatInches(a);
+      const spineValue = formatInches(b);
+      const roofValue = formatInches(c);
+      const riseValue = formatInches(rise);
 
+      setOutput('wall', wallValue);
+      setOutput('spine', spineValue);
+      setOutput('roof', roofValue);
+      setOutput('rise', riseValue);
+      setOutput('diagramWall', wallValue);
+      setOutput('diagramSpine', spineValue);
+      setOutput('diagramRoof', roofValue);
+      setOutput('diagramRise', riseValue);
+      updateDiagram(a, b);
+      clearMessage();
+    }
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      calculate();
+    });
+
+    Object.values(fields).forEach(function(field) {
+      field.addEventListener('input', function() {
+        if (message.classList.contains('show')) {
+          clearMessage();
+        }
+      });
+    });
+
+    calculate();
+  </script>
 </body>
 </html>
